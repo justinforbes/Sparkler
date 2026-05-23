@@ -103,29 +103,31 @@ Function CreateUser {
         $samaccountnamecleaned = $samaccountname -replace '(?<=^.{20}).*'
     }
     
-    $departmentnumber = [convert]::ToInt32('9999999') 
-  
-    # This beauty from https://github.com/WazeHell/vulnerable-AD/blob/master/vulnad.ps1
-    Set-ADDefaultDomainPasswordPolicy -Identity $dnsroot -LockoutDuration 00:01:00 -LockoutObservationWindow 00:01:00 -ComplexityEnabled $false -ReversibleEncryptionEnabled $False -MinPasswordLength 4
+    $departmentnumber = [convert]::ToInt32('9999999')
 
     $description = ''
     $passStrings = Get-Content ($scriptpath + '\Passwords\passwords.txt')
     # Select random object
     $pwd = Get-Random -InputObject $passStrings -Count 1
 
-    $passwordSecure = 1..1000 | get-random
+    $passwordSecure = 1..1000 | Get-Random
     if ($passwordSecure -lt 10) {
-        $pwd = ([char[]]([char]33..[char]95) + ([char[]]([char]97..[char]126)) + 0..9 | sort { Get-Random })[0..20] -join ''
+        $pwd = ([char[]]([char]33..[char]95) + ([char[]]([char]97..[char]126)) + 0..9 | Sort-Object { Get-Random })[0..20] -join ''
     }
-    else {}
 
-    $passwordinDesc = 1..1000 | get-random
+    $passwordinDesc = 1..1000 | Get-Random
     if ($passwordinDesc -lt 10) {
         $description = 'The account password is ' + $pwd
     }
-    else {}
 
-    new-aduser -server $setdc -Description $Description -DisplayName $name -Name $name -SamAccountName $samaccountnamecleaned -GivenName $givenname -Surname $surname -Enabled $true -Path $ouLocation -AccountPassword (ConvertTo-SecureString ($pwd) -AsPlainText -force)
+    # Initialize variables for service accounts to prevent errors
+    if ($accountType -le 10) {
+        $givenname = $name
+        $surname = "ServiceAccount"
+        $samaccountnamecleaned = $name
+    }
+
+    new-aduser -server $setdc -Description $Description -DisplayName $name -Name $name -SamAccountName $samaccountnamecleaned -GivenName $givenname -Surname $surname -Enabled $true -Path $ouLocation -AccountPassword (ConvertTo-SecureString ($pwd) -AsPlainText -Force)
 
     $pwd = ''
     

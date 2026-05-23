@@ -36,7 +36,8 @@ Function CreateComputer {
     $3lettercodes = import-csv ($scriptparent + "\03-AD_OU_CreateStructure\3lettercodes.csv")
     #=======================================================================
     $dn = (get-addomain).distinguishedname
-        
+    $dnstring = $dn
+
     #get owner all parameters and store as variable to call upon later
     $ownerinfo = Get-Random $userlist
     if ($PSBoundParameters.ContainsKey('Creator') -eq $true) {
@@ -219,7 +220,7 @@ Function CreateComputer {
         }
         do {
             $compname = $computernameprefixfull + ([convert]::ToInt32('1000000') + ($i))
-                            
+
             $i = $i + (random -Minimum 1 -Maximum 10)
             try {
                 #write-host doing TRY get-adcomputer $compname
@@ -230,8 +231,14 @@ Function CreateComputer {
                 #write-host doing Catch
                 $checkforDupe = 1
             }
+
+            # Safety limit to prevent infinite loops
+            if ($i -gt 10000) {
+                Write-Warning "Exceeded maximum attempts to find unique computer name. Breaking loop."
+                $checkforDupe = 1
+            }
         }
-                    
+
         while ($checkforDupe -eq 0)
                             
     }
@@ -252,15 +259,19 @@ Function CreateComputer {
                        
             try {
                 $z = get-adcomputer $compname -server $setdc
-                $checkfordupe = 0
+                $checkforDupe = 0
             }
             catch { $checkforDupe = 1 }
             $i++
-                        
-                            
+
+            # Safety limit to prevent infinite loops
+            if ($i -gt 10000) {
+                Write-Warning "Exceeded maximum attempts to find unique computer name. Breaking loop."
+                $checkforDupe = 1
+            }
+
         }
-                        
-                        
+
         while ($checkforDupe -eq 0)
                             
     }

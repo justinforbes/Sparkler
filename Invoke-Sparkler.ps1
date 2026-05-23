@@ -51,7 +51,7 @@ function Add-Domain {
    Write-Progress -Activity "Task: Deploying a fresh domain." -Status "Progress:" -PercentComplete ($ii / $totalscripts * 100)
    Write-Host "OK, fresh domain is setup, we need to reboot. Run Invoke-Sparkler.ps1 after reboot."
    Start-Sleep -Second 10
-   Restart-Computer -f
+   Restart-Computer -Force
 }
 
 function Install-LAPSSchema {
@@ -79,10 +79,14 @@ function Add-Users {
 
    Write-Host "Creating Users on Domain" -ForegroundColor Green
    $NumOfUsers = 1000..5000 | Get-Random #this number is the random number of users to create on a domain.  Todo: Make process createusers.ps1 in a parallel loop
-   $X = 1
+   $jj = 1
    Write-Progress -Activity "Task: Creating Users" -Status "Progress:" -PercentComplete ($ii / $totalscripts * 100)
    $ii++
-  
+
+   # Set weak password policy once before creating users (instead of on every user creation)
+   $dnsroot = (Get-ADDomain).dnsroot
+   Set-ADDefaultDomainPasswordPolicy -Identity $dnsroot -LockoutDuration 00:01:00 -LockoutObservationWindow 00:01:00 -ComplexityEnabled $false -ReversibleEncryptionEnabled $False -MinPasswordLength 4
+
    .($basescriptPath + '\04-AD_Users_Create\CreateUsers.ps1')
    $createuserscriptpath = $basescriptPath + '\04-AD_Users_Create\'
 
@@ -92,7 +96,7 @@ function Add-Users {
       createuser -Domain $Domain -OUList $ousAll -ScriptDir $createuserscriptpath
       Write-Progress -Activity "Task: Creating $NumOfUsers Users" -Status "Progress:" -PercentComplete ($jj / $NumOfUsers * 100)
       $jj++
-   }while ($jj -lt $NumOfUsers)
+   }while ($jj -le $NumOfUsers)
 }
 
 function Add-Groups {
@@ -101,17 +105,17 @@ function Add-Groups {
    #>
 
    Write-Host "Creating Groups on Domain" -ForegroundColor Green
-   $NumOfGroups = 100..500 | Get-Random 
+   $NumOfGroups = 100..500 | Get-Random
    $jj = 1
    Write-Progress -Activity "Task: Creating $NumOfGroups Groups" -Status "Progress:" -PercentComplete ($ii / $totalscripts * 100)
-   
+
    .($basescriptPath + '\05-AD_Groups_Create\CreateGroups.ps1')
-   
+
    do {
       Creategroup
       Write-Progress -Activity "Task: Creating $NumOfGroups Groups" -Status "Progress:" -PercentComplete ($jj / $NumOfGroups * 100)
       $jj++
-   }while ($jj -lt $NumOfGroups)
+   }while ($jj -le $NumOfGroups)
 }
 
 function Add-Computers {
@@ -120,16 +124,16 @@ function Add-Computers {
    #>
 
    Write-Host "Creating Computers on Domain" -ForegroundColor Green
-   $NumOfComps = 50..150 | Get-Random 
+   $NumOfComps = 50..150 | Get-Random
    $jj = 1
    Write-Progress -Activity "Task: Creating Computers" -Status "Progress:" -PercentComplete ($ii / $totalscripts * 100)
-   
+
    .($basescriptPath + '\06-AD_Computers_Create\CreateComputers.ps1')
    do {
       Write-Progress -Activity "Task: Creating $NumOfComps computers" -Status "Progress:" -PercentComplete ($jj / $NumOfComps * 100)
       createcomputer
       $jj++
-   }while ($jj -lt $NumOfComps)
+   }while ($jj -le $NumOfComps)
 }
 
 function Add-Permissions {

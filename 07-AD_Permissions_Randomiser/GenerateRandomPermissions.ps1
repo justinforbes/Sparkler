@@ -122,16 +122,16 @@ Function Create-PermissionSet {
     #ADD ALL PARAMETERS TO $PERMISSIONS
     $Permissions += $row
     $permissions
-    $permINT = 1..100 | get-random 
-    if ($permint -gt 25) {
+    $permINT = 1..100 | Get-Random
+    if ($permInt -gt 25) {
         #if gt this number, assign random permissions
-        $howmanypermissions = 1..60 | get-random
+        $howmanypermissions = 1..60 | Get-Random
         $p = 1
         do {
-            $randoperm = 0..(($permissions.count) - 1) | Get-random
+            $randoperm = 0..(($permissions.Count) - 1) | Get-Random
             $permissions[$randoperm].APPLY = 'TRUE'
             $p++
-        }while ($P -le $howmanypermissions)
+        }while ($p -le $howmanypermissions)
     }
     $permissions
 
@@ -152,13 +152,18 @@ $PermissionsToOUMapping.Add('Printer', 'Devices')
 #BEGIN MAKING GROUPS AND SETTING ACLS
 $dom = get-addomain
 $setdc = $dom.pdcemulator
-cd ad:
+
+# Ensure AD: drive is available before navigating
+if (-not (Get-PSDrive -Name "AD" -ErrorAction SilentlyContinue)) {
+    Import-Module ActiveDirectory -ErrorAction Stop
+}
+Set-Location ad:
+
 $dn = $dom.distinguishedname
 $AllOUs = Get-ADOrganizationalUnit -Filter *
 $allUsers = get-adobject -Filter { objectclass -eq 'user' } -ResultSetSize 2500 -Server $setdc | Where-object -Property objectclass -eq user
 
 ## Create guidmap for acl functions
-cd ad:
 #=============================================
        
 #Get a reference to the RootDSE of the current domain

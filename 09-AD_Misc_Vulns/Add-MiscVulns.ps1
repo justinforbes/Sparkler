@@ -5,13 +5,16 @@
        The script was derived from @WazeHell's vulnerable-AD (https://github.com/WazeHell/vulnerable-AD)  
 #>
 
-#Base Lists 
+#Base Lists
 $BadPasswords = @('redwings');
 $BadACL = @('GenericAll', 'GenericWrite', 'WriteOwner', 'WriteDACL', 'Self');
 $ServicesAccountsAndSPNs = @('mssql_svc,mssqlserver', 'http_svc,httpserver', 'exchange_svc,exserver');
 $CreatedUsers = @();
 $AllObjects = @();
 $Domain = (get-addomain).dnsroot;
+
+# Load System.Web for password generation
+Add-Type -AssemblyName System.Web -ErrorAction SilentlyContinue
 
 function GetRandom {
     Param(
@@ -158,8 +161,9 @@ function DisableSMBSigning {
     Set-SmbClientConfiguration -RequireSecuritySignature 0 -EnableSecuritySignature 0 -Confirm -Force
 }
 
-$BadACLs
-Write-Host "$BadACL Done"
+# Execute vulnerability functions
+BadACLs
+Write-Host "BadACLs Done"
 Kerberoasting
 Write-Host "Kerberoasting Done"
 ASREPRoasting

@@ -16,7 +16,7 @@ Get-ADObject -SearchBase ($schemaPath.SchemaNamingContext) -LDAPFilter  `
 $attributesecurityguid = @{}
 Get-ADObject -SearchBase ($schemaPath.SchemaNamingContext) -LDAPFilter  `
     "(&(schemaidguid=*)(attributeSecurityGUID=*))" -Properties lDAPDisplayName, attributesecurityguid | 
-% { $attributesecurityguid[$_.lDAPDisplayName] = ([guid]$_.attributesecurityguid).guid }sadfsdgfsdgfsdgfsdgfsdgf
+% { $attributesecurityguid[$_.lDAPDisplayName] = ([guid]$_.attributesecurityguid).guid }
 #Create a hashtable to store the GUID value of each extended right in the forest
 $extendedrightsmap = @{}
 Get-ADObject -SearchBase ($schemaPath.ConfigurationNamingContext) -LDAPFilter `

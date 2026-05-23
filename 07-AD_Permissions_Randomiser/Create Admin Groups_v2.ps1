@@ -5,7 +5,7 @@ function Get-ScriptDirectory {
 }
 $scriptPath = Get-ScriptDirectory
 $adplatformsourcedir = split-path -Path $scriptPath -Parent
-$permissionset = .($adplatformsourcedir + "\AD_Group_CreateAdminGroups\AD Permissions for Group Granular Access.ps1")
+$permissionset = .($adplatformsourcedir + "\07-AD_Permissions_Randomiser\GenerateRandomPermissions.ps1")
 #=====================================
 #3 letter affiliate codes here
 $3LetterCodeCSV = $adplatformsourcedir + '\03-AD_OU_CreateStructure\3lettercodes.csv'
@@ -27,7 +27,12 @@ $dn = (Get-ADDomain).distinguishedname
 $Tier1GroupLocation = "OU=T1-Permissions,OU=Tier 1,OU=Admin" + "," + $dn
 #Tier 2
 $Tier2GroupLocation = "OU=T2-Permissions,OU=Tier 2,OU=Admin" + "," + $dn
-cd ad:
+# Ensure AD: drive is available before navigating
+if (-not (Get-PSDrive -Name "AD" -ErrorAction SilentlyContinue)) {
+    Import-Module ActiveDirectory -ErrorAction Stop
+}
+Set-Location ad:
+
 $dc = (get-addomain).PDCEmulator
 #=============================================
        

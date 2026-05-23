@@ -62,7 +62,11 @@ Function AddRandomToGroups {
         $allcomps = $CompList
     }
     
-    cd ad:
+    # Ensure AD: drive is available before navigating
+    if (-not (Get-PSDrive -Name "AD" -ErrorAction SilentlyContinue)) {
+        Import-Module ActiveDirectory -ErrorAction Stop
+    }
+    Set-Location ad:
 
     <#Pick X number of random users#>
     $UsersInGroupCount = [math]::Round($allusers.count * .8) #need to round to int. need to check this works
@@ -77,12 +81,14 @@ Function AddRandomToGroups {
         #get how many groups
         $num = 1..10 | Get-Random
         $n = 0
+        $maxAttempts = 50  # Safety limit to prevent infinite loops
         do {
             $randogroup = $allGroupsFiltered | Get-Random
             #add to group
             try { Add-ADGroupMember -Identity $randogroup -Members $user }
             catch {}
             $n++
+            if ($n -ge $maxAttempts) { break }
         }while ($n -le $num)
     }
 
@@ -118,12 +124,14 @@ Function AddRandomToGroups {
         #get how many groups
         $num = 1..2 | Get-Random
         $n = 0
+        $maxAttempts = 20  # Safety limit to prevent infinite loops
         do {
             $randogroup = $allGroupsFiltered | Get-Random
             #add to group
             try { Add-ADGroupMember -Identity $randogroup -Members $group }
             catch {}
             $n++
+            if ($n -ge $maxAttempts) { break }
         }while ($n -le $num)
     }
     # add all critical groups to 2-5 other random groups
@@ -133,12 +141,14 @@ Function AddRandomToGroups {
         #get how many groups
         $num = 1..3 | Get-Random
         $n = 0
+        $maxAttempts = 20  # Safety limit to prevent infinite loops
         do {
             $randogroup = $allGroupsFiltered | Get-Random
             #add to group
             try { Add-ADGroupMember -Identity $randogroup -Members $_ }
             catch {}
             $n++
+            if ($n -ge $maxAttempts) { break }
         }while ($n -le $num)
     }
 
@@ -151,12 +161,14 @@ Function AddRandomToGroups {
         #get how many groups
         $num = 1..5 | Get-Random
         $n = 0
+        $maxAttempts = 30  # Safety limit to prevent infinite loops
         do {
             $randogroup = $allGroupsFiltered | Get-Random
             #add to group
             try { Add-ADGroupMember -Identity $randogroup -Members $comp }
             catch {}
             $n++
+            if ($n -ge $maxAttempts) { break }
         }while ($n -le $num)
     }
 
