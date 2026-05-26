@@ -1,6 +1,7 @@
 <p align="center">
   <img src="https://raw.githubusercontent.com/kurobeats/Sparkler/refs/heads/main/logo.png" alt="Sparkler Logo" width="300">
 </p>
+
 # Sparkler 💥
 
 **Sparkler Bomb** /ˈspɑːklə bɒm/ *noun*
